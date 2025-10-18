@@ -1,0 +1,366 @@
+{
+  "name": "Community Food Rescue Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -64
+      ],
+      "id": "78055a3c-d27d-497b-9b52-09de69aa0283",
+      "name": "WhatsApp Trigger",
+      "webhookId": "f94454c3-d48b-4c25-bfc9-9eb2a137cb90",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "5sSnTL8FfePBkfmO",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "food_available",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a26f4319-e1f5-4a3c-be81-2323f34c07be"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        176,
+        -64
+      ],
+      "id": "c9bbcfcd-8c10-4f05-917a-14615dbeeeb9",
+      "name": "Route Messages"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.messages[0].text.body ? $input.first().json.messages[0].text.body.trim() : \"\";\nconst from = $input.first().json.messages[0].from || \"\";\n\nconst numMedia = parseInt($json[\"numMedia\"] || \"0\");\nconst mediaUrls = [];\nfor(let i = 0; i < numMedia; i++){\n  if($json[`MediaUrl${i}`]) mediaUrls.push($json[`MediaUrl${i}`]);\n}\n\n// Detect if message contains 'food available'\nlet command = \"unknown\";\nif(body.toLowerCase().includes(\"food available\")) {\n    command = \"food_available\";\n}\n\nreturn [{json: { body, from, mediaUrls, numMedia, command }}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -64
+      ],
+      "id": "f89fb1f8-2705-482d-ace7-1bfd525c7d9e",
+      "name": "Detect Command"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        384,
+        128
+      ],
+      "id": "054ea71b-6f54-4c08-bd14-599e90f400c2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Nb4BXQ0sV5JscY8p",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the text output from LLM node\nconst text = $input.first().json.text;\n\n// Try to extract valid JSON (remove code fences or extra text)\nconst cleanText = text.replace(/```json|```/g, '').trim();\n\nlet data = {};\ntry {\n  data = JSON.parse(cleanText);\n} catch (e) {\n  data = { error: \"Invalid JSON\", raw: cleanText };\n}\n\n// Return structured keys\nreturn [{ json: data }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -64
+      ],
+      "id": "95fb2c02-ece8-4a3f-934e-7de65e2a0adc",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=System: You are an assistant that extracts structured fields from a short WhatsApp message about available food donation.\nUser: Extract JSON with keys: food_type, quantity, pickup_address, time_available, special_handling. Return only JSON.\nMessage: \"{{ $json[\"body\"] }}\"\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        384,
+        -64
+      ],
+      "id": "8a7fba50-1be9-4bd6-af3c-1122c169494d",
+      "name": "AI Parsing Node"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1wGs8QoIAig0XORmyA4QkJBKe13na6cI1HkIjjP45CDY",
+          "mode": "list",
+          "cachedResultName": "Volunteers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wGs8QoIAig0XORmyA4QkJBKe13na6cI1HkIjjP45CDY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wGs8QoIAig0XORmyA4QkJBKe13na6cI1HkIjjP45CDY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        960,
+        -64
+      ],
+      "id": "5a3b6959-199b-4342-83e1-5bd2254c7eda",
+      "name": "Volunteers Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "urfFjnLmHzSzKjKX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "limitWaitTime": true,
+        "resumeAmount": 10,
+        "resumeUnit": "seconds",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        144
+      ],
+      "id": "a839b825-c6bb-45eb-a697-14cfd7cbeb36",
+      "name": "Wait",
+      "webhookId": "316cb9be-12f2-488e-ba90-5745a612e3c5"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "798807063318717",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').all()[0].json.messages[0].from }}",
+        "textBody": "Volunteer Ali Khan (V001) has accepted your donation and will pick it up soon. Thank you for contributing to our community food rescue.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1024,
+        144
+      ],
+      "id": "20211b0f-065a-4217-a9be-a9636bcd535d",
+      "name": "Send message",
+      "webhookId": "e34d436b-e187-43c4-a401-d49c8187fd84",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "wMVOeuKzCn1Cv6Zg",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1️⃣ List of common Pakistani cities\nconst cities = [\n  \"islamabad\", \"rawalpindi\", \"lahore\", \"karachi\", \"faisalabad\", \"multan\", \"peshawar\",\n  \"quetta\", \"gujranwala\", \"sialkot\", \"bahawalpur\", \"sargodha\", \"sukkur\", \"hyderabad\",\n  \"mirpur\", \"muzaffarabad\", \"abbottabad\", \"dera ghazi khan\", \"dera ismail khan\",\n  \"nawabshah\", \"okara\", \"rahim yar khan\", \"khuzdar\", \"chakwal\", \"mardan\", \"kohat\",\n  \"swat\", \"kasur\", \"gujrat\", \"jhelum\", \"hassan abdal\", \"attock\", \"havelian\"\n];\n\n// 2️⃣ Get pickup address from AI Parsing node\nconst pickupData = $items(\"Code in JavaScript\")[0].json; // change name if your AI node has a different one\nconst pickupAddress = (pickupData.pickup_address || \"\").toLowerCase();\n\n// 3️⃣ Detect pickup city\nlet pickupCity = cities.find(city => pickupAddress.includes(city));\nif (!pickupCity) pickupCity = \"unknown\";\n\n// 4️⃣ Get volunteers list\nconst volunteers = $items(\"Volunteers Sheet\").map(item => ({\n  volunteer_id: item.json.volunteer_id,\n  name: item.json.name,\n  phone_whatsapp: item.json.phone_whatsapp,\n  address: item.json.address?.toLowerCase() || \"\",\n  capacity: item.json.capacity,\n  active: item.json.active\n}));\n\n// 5️⃣ Filter volunteers in the same city, active, and with capacity\nconst matchedVolunteers = volunteers.filter(v =>\n  v.active &&\n  v.capacity > 0 &&\n  v.address.includes(pickupCity)\n);\n\n// 6️⃣ Return matched volunteers\nif (pickupCity === \"unknown\") {\n  return [{ json: { message: \"City not found in pickup address.\" } }];\n}\n\nif (matchedVolunteers.length === 0) {\n  return [{ json: { message: `No volunteers found in ${pickupCity}.` } }];\n}\n\nreturn matchedVolunteers.map(v => ({\n  json: {\n    volunteer_id: v.volunteer_id,\n    name: v.name,\n    phone_whatsapp: v.phone_whatsapp,\n    address: v.address,\n    pickupCity,\n    message: `Volunteer ${v.name} is in ${pickupCity} and can be notified.`\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        -64
+      ],
+      "id": "c2a694c2-787a-4a5d-a925-194ffacc7b80",
+      "name": "Match City"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "798807063318717",
+        "recipientPhoneNumber": "=+92 301 0055035",
+        "textBody": "=New food pickup:\n• {{ $('Code in JavaScript').all()[0].json.quantity }} {{ $('Code in JavaScript').all()[0].json.food_type }}\n• Location: {{ $('Code in JavaScript').all()[0].json.pickup_address }}\n• Ready at: {{ $('Code in JavaScript').all()[0].json.time_available }}\nReply YES to accept",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        144
+      ],
+      "id": "65e2ce86-f3e3-4aeb-85c0-013a75a26641",
+      "name": "Message to Eligible Volunteers",
+      "webhookId": "7fcaa0aa-93cd-4d18-bfde-096fb55a8134",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "wMVOeuKzCn1Cv6Zg",
+          "name": "WhatsApp account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Detect Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect Command": {
+      "main": [
+        [
+          {
+            "node": "Route Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Messages": {
+      "main": [
+        [
+          {
+            "node": "AI Parsing Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Parsing Node",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Volunteers Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Parsing Node": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Volunteers Sheet": {
+      "main": [
+        [
+          {
+            "node": "Match City",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match City": {
+      "main": [
+        [
+          {
+            "node": "Message to Eligible Volunteers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message to Eligible Volunteers": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bf052719-b56e-4491-ae22-e9dd61056d44",
+  "meta": {
+    "templateId": "self-building-ai-agent",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d0725917eda75b45ae63f9ed34f74fcea3477132b0e996970eaecf0b7b1aff3f"
+  },
+  "id": "X1RAgD437c0Paoyb",
+  "tags": []
+}
