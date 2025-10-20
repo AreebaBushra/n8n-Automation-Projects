@@ -8,7 +8,7 @@ It streamlines invoice processing, expense tracking, and financial reporting by 
 ## 📘 Overview
 
 Manual finance management often leads to missed details, errors, and wasted time.
-FinFlow solves this by automating the **end-to-end workflow** of collecting invoices, parsing payment information, updating Google Sheets, and generating AI-based financial summaries.
+AutoFinance solves this by automating the **end-to-end workflow** of collecting invoices, parsing payment information, updating Google Sheets, and generating AI-based financial summaries.
 This project demonstrates how **automation + AI** can simplify real-world business operations efficiently.
 
 ---
