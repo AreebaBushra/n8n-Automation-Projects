@@ -80,3 +80,9 @@ Frontend (Website) ➜ Webhook (n8n) ➜ AI Agent ➜ Gemini LLM ➜ Response Re
 
 <img width="1338" height="574" alt="Screenshot 2025-10-20 185703" src="https://github.com/user-attachments/assets/72152957-57ef-4333-a32c-96e9a3a57572" />
 
+---
+
+**Areeba Bushra**
+*Data Science & AI Enthusiast | Automation Developer*
+📍 Based in Pakistan
+
