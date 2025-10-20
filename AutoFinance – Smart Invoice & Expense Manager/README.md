@@ -69,7 +69,8 @@ This project demonstrates how **automation + AI** can simplify real-world busine
 
 ---
 
-Areeba Bushra
-Data Science & AI Enthusiast | Automation Developer
+**Areeba Bushra**
+*Data Science & AI Enthusiast | Automation Developer*
 📍 Based in Pakistan
+
 
