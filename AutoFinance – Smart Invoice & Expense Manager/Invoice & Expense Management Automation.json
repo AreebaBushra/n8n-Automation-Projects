@@ -1,0 +1,536 @@
+{
+  "name": "Invoice & Expense Management Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "subject:(invoice OR payment)",
+          "readStatus": "unread"
+        },
+        "options": {}
+      },
+      "id": "45b158d7-129c-4959-87ea-8052cd1e0156",
+      "name": "New Invoice/Payment Email",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1680,
+        352
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "g3mkKYaWQX3Cnbrm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "spreadsheetId",
+              "value": "YOUR_GOOGLE_SHEET_ID",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "incomeSheetName",
+              "value": "Income",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "expenseSheetName",
+              "value": "Expenses",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "reportRecipientEmail",
+              "value": "={{ $json.from.value[0].address }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "5e76cfc6-ee6a-44eb-bb88-4ec458671717",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1904,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n    item.json = item.json || {};\n\n    // Get email body safely\n    let emailBody = item.json.text || item.json.body || item.json.snippet || '';\n\n    // Replace HTML tags with line breaks\n    emailBody = emailBody.replace(/<br\\s*\\/?>/gi, '\\n')\n                         .replace(/<\\/div>/gi, '\\n')\n                         .replace(/<[^>]+>/g, '')  // remove remaining tags\n                         .replace(/\\r/g, '')       // remove carriage returns\n                         .trim();\n\n    // Split into lines for safer parsing\n    const lines = emailBody.split('\\n').map(l => l.trim()).filter(l => l);\n\n    // Helper to extract field from lines\n    const getField = (label) => {\n        for (let line of lines) {\n            const regex = new RegExp(label + '\\\\s*:\\\\s*(.*)', 'i');\n            const match = line.match(regex);\n            if (match && match[1]) return match[1].trim();\n        }\n        return '';\n    };\n\n    const invoiceId = getField('Invoice ID');\n    const clientName = getField('Client Name');\n    const projectName = getField('Project Name');\n    const invoiceDate = getField('Invoice Date');\n    const paymentDate = getField('Payment Date');\n    const amount = getField('Amount');\n    const paymentMethod = getField('Payment Method');\n\n    const status = emailBody.toLowerCase().includes(\"successfully sent\") ? \"Paid\" : \"Pending\";\n\n    return {\n        json: {\n            Date: paymentDate || invoiceDate || '',\n            Name: clientName || '',\n            Project: projectName || '',\n            \"Invoice ID\": invoiceId || '',\n            \"Amount (USD)\": amount || '',\n            \"Payment Method\": paymentMethod || '',\n            Status: status || ''\n        }\n    };\n});\n"
+      },
+      "id": "1f70043d-784b-45c7-96f8-71ca2ae31145",
+      "name": "Extract Invoice Details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1IyE63bcy5ENV0hnARPlJ1hFNYfQeRBqBUXo1Ogqd6qU",
+          "mode": "list",
+          "cachedResultName": "Income_and_Expenses_Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IyE63bcy5ENV0hnARPlJ1hFNYfQeRBqBUXo1Ogqd6qU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Income",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IyE63bcy5ENV0hnARPlJ1hFNYfQeRBqBUXo1Ogqd6qU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Invoice ID": "={{ $json['Invoice ID'] }}",
+            "Date": "={{ $json.Date }}",
+            " Name": "={{ $json.Name }}",
+            "Project / Service": "={{ $json.Project }}",
+            "Amount (USD)": "={{ $json['Amount (USD)'] }}",
+            "Payment Method": "={{ $json['Payment Method'] }}",
+            "Status": "={{ $json.Status }}"
+          },
+          "matchingColumns": [
+            "Invoice ID"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " Name",
+              "displayName": " Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Project / Service",
+              "displayName": "Project / Service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice ID",
+              "displayName": "Invoice ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Amount (USD)",
+              "displayName": "Amount (USD)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Method",
+              "displayName": "Payment Method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7bee9f2e-c2ea-42f9-a071-29f93a6d0860",
+      "name": "Add to Income Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2352,
+        352
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "urfFjnLmHzSzKjKX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "2ad9fc54-10b0-4dfa-84b0-7e352e677747",
+      "name": "Monthly Report Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1632,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1IyE63bcy5ENV0hnARPlJ1hFNYfQeRBqBUXo1Ogqd6qU",
+          "mode": "list",
+          "cachedResultName": "Income_and_Expenses_Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IyE63bcy5ENV0hnARPlJ1hFNYfQeRBqBUXo1Ogqd6qU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Income",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IyE63bcy5ENV0hnARPlJ1hFNYfQeRBqBUXo1Ogqd6qU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "8ba09f74-ffec-4243-b9f8-d2022c0fe1d6",
+      "name": "Read Income Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1904,
+        592
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "urfFjnLmHzSzKjKX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1IyE63bcy5ENV0hnARPlJ1hFNYfQeRBqBUXo1Ogqd6qU",
+          "mode": "list",
+          "cachedResultName": "Income_and_Expenses_Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IyE63bcy5ENV0hnARPlJ1hFNYfQeRBqBUXo1Ogqd6qU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 487635694,
+          "mode": "list",
+          "cachedResultName": "Expenses",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IyE63bcy5ENV0hnARPlJ1hFNYfQeRBqBUXo1Ogqd6qU/edit#gid=487635694"
+        },
+        "options": {}
+      },
+      "id": "d26154f8-6461-4a3b-97a4-cfa5ad5f1c05",
+      "name": "Read Expense Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1904,
+        784
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "urfFjnLmHzSzKjKX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "587f3f4f-c6aa-40c0-8f16-f193ac0b6593",
+      "name": "Combine Income & Expenses",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2208,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a financial analyst. Analyze the income and expense data provided and create a comprehensive monthly financial summary report. Include: 1) Total income, 2) Total expenses, 3) Net profit/loss, 4) Top income sources, 5) Major expense categories, 6) Month-over-month trends if applicable, 7) Key insights and recommendations.  \nincome and expense data= {{ $json.readableText }}",
+        "options": {}
+      },
+      "id": "531c3bf0-3b6a-4fde-b07c-eff9b119143a",
+      "name": "Financial Summary Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2640,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "64646e5a-b7ec-4cc4-937b-4da828dfde34",
+      "name": "Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2688,
+        880
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Nb4BXQ0sV5JscY8p",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "areebabushra79@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.htmlBody }}",
+        "options": {}
+      },
+      "id": "a2b4049c-b017-4579-a98a-6d8e312c7571",
+      "name": "Email Report",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3232,
+        672
+      ],
+      "webhookId": "567a190b-8b1e-42f9-a40d-d5bd50bf982e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "g3mkKYaWQX3Cnbrm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const reportText = `\n<h2>📊 Monthly Financial Summary Report - October 2025</h2>\n<p><b>Date:</b> 2025-10-26<br>\n<b>Period:</b> October 2025</p>\n\n<h3>Executive Summary</h3>\n<p>This report provides a financial overview for October 2025 based on the provided transaction data...</p>\n\n<h3>Total Income</h3>\n<p><b>Total Income:</b> $122.00 USD</p>\n\n<h3>Total Expenses</h3>\n<p><b>Total Expenses:</b> $122.00 USD</p>\n\n<h3>Net Profit/Loss</h3>\n<p><b>Net Profit/Loss:</b> $0.00 USD (Break-even)</p>\n\n<h3>Top Income Sources</h3>\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\">\n<tr><th>Client / Source</th><th>Project / Service</th><th>Amount (USD)</th></tr>\n<tr><td>Fiverr Buyer</td><td>Blog Illustration Pack</td><td>$40.00</td></tr>\n<tr><td>John Doe</td><td>Website UI Design</td><td>$30.00</td></tr>\n<tr><td>Upwork Client</td><td>Mobile App Wireframes</td><td>$25.00</td></tr>\n<tr><td>Sarah Lee</td><td>Logo Design</td><td>$18.00</td></tr>\n<tr><td>Local Client</td><td>Social Media Branding</td><td>$9.00</td></tr>\n</table>\n\n<h3>Major Expense Categories</h3>\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\">\n<tr><th>Expense Category</th><th>Vendor</th><th>Description</th><th>Amount (USD)</th></tr>\n<tr><td>Marketing</td><td>Facebook Ads</td><td>Ad Campaign</td><td>$40.00</td></tr>\n<tr><td>Software</td><td>Adobe</td><td>Creative Cloud</td><td>$30.00</td></tr>\n<tr><td>Utilities</td><td>Jazz Internet</td><td>Internet Bill</td><td>$25.00</td></tr>\n<tr><td>Equipment</td><td>Daraz</td><td>Wireless Mouse</td><td>$18.00</td></tr>\n<tr><td>Food</td><td>Subway</td><td>Lunch during client call</td><td>$9.00</td></tr>\n</table>\n\n<h3>Key Insights & Recommendations</h3>\n<ul>\n<li><b>Data Structure Clarification (Critical):</b> Separate income and expense transactions properly.</li>\n<li><b>Use Accounting Software:</b> QuickBooks, Xero, or a structured spreadsheet system.</li>\n<li><b>Profitability Analysis:</b> Evaluate project/client profitability and expense ratios.</li>\n<li><b>Budgeting:</b> Develop a monthly budget to track goals.</li>\n</ul>\n`;\n\nreturn [\n  {\n    json: {\n      subject: \"Monthly Financial Summary Report - October 2025\",\n      htmlBody: reportText  // Use this in Gmail node as \"HTML\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2992,
+        672
+      ],
+      "id": "319523e1-226b-456f-a31a-7bfc24162e8b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from the previous node (Combine Income & Expenses)\nconst items = $input.all();\n\n// Combine all rows into readable text\nlet summaryText = 'MONTHLY TRANSACTIONS SUMMARY\\n\\n';\n\nfor (const item of items) {\n  const data = item.json;\n  \n  summaryText += \n`Invoice ID: ${data[\"Invoice ID\"] || \"N/A\"}\nDate: ${data[\"Date\"] || \"N/A\"}\nClient / Name: ${data[\" Name\"] || \"N/A\"}\nProject / Service: ${data[\"Project / Service\"] || \"N/A\"}\nAmount (USD): $${data[\"Amount (USD)\"] || \"0\"}\nPayment Method: ${data[\"Payment Method\"] || \"N/A\"}\nStatus: ${data[\"Status\"] || \"N/A\"}\nExpense Category: ${data[\"Expense Category\"] || \"N/A\"}\nVendor / Source: ${data[\"Vendor / Source\"] || \"N/A\"}\nDescription: ${data[\"Description\"] || \"N/A\"}\nNotes: ${data[\"Notes\"] || \"None\"}\n\n--------------------------------------------\\n`;\n}\n\n// Return readable text as JSON field\nreturn [\n  {\n    json: {\n      readableText: summaryText.trim()\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2416,
+        672
+      ],
+      "id": "0876d6e8-aa1f-40a8-bac2-31893f49ed2b",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "New Invoice/Payment Email": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Extract Invoice Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Invoice Details": {
+      "main": [
+        [
+          {
+            "node": "Add to Income Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monthly Report Schedule": {
+      "main": [
+        [
+          {
+            "node": "Read Income Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Expense Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Income Data": {
+      "main": [
+        [
+          {
+            "node": "Combine Income & Expenses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Expense Data": {
+      "main": [
+        [
+          {
+            "node": "Combine Income & Expenses",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combine Income & Expenses": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Financial Summary Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Summary Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Email Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Financial Summary Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "759a6b4d-e8a3-46bb-b7d3-33cbbf50d1f4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d0725917eda75b45ae63f9ed34f74fcea3477132b0e996970eaecf0b7b1aff3f"
+  },
+  "id": "LDdUvAnAy1dXWslz",
+  "tags": []
+}
