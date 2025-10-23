@@ -55,9 +55,6 @@ This project demonstrates how **automation + AI** can simplify real-world busine
 4. **Analysis:** AI summarizes the month’s financial performance.
 5. **Reporting:** The summary is formatted and emailed to the user.
 
-
-<img width="1084" height="468" alt="Screenshot (20)" src="https://github.com/user-attachments/assets/cccc77fc-5b77-4dfd-8d7d-6e0fe62fca1f" />
-
 ---
 
 ## 💡 Benefits
