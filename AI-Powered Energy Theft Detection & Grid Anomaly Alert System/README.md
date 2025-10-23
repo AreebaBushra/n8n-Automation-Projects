@@ -1,7 +1,7 @@
 # ⚡ AI-Powered Energy Theft Detection & Grid Anomaly Alert System
 
 AI-Powered Energy Theft Detection & Grid Anomaly Alert System is an intelligent automation workflow built with n8n, designed to identify irregular electricity consumption patterns, detect potential theft, and alert utility teams in real time.
-This system combines AI anomaly detection, data automation, and smart reporting to help energy companies and distribution authorities minimize losses and improve grid reliability.
+
 ---
 
 ## 🚀 Overview
@@ -44,10 +44,10 @@ This system automates the detection of irregular energy usage by combining:
 
 ## 📈 Impact
 
-✅ Detects theft faster
-✅ Reduces manual review time
-✅ Improves grid reliability
-✅ Supports data-driven decision-making
+* ✅ Detects theft faster
+* ✅ Reduces manual review time
+* ✅ Improves grid reliability
+* ✅ Supports data-driven decision-making
 
 ---
 
