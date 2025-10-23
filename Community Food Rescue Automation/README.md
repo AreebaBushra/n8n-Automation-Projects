@@ -74,9 +74,6 @@ This creates an **end-to-end automated food rescue chain** that saves time and r
 6. **Confirmation:**
    Once a volunteer accepts, the donor receives a WhatsApp confirmation.
 
-   
-<img width="1233" height="472" alt="Screenshot (19)" src="https://github.com/user-attachments/assets/b80dfff9-a492-4782-bf6a-7782f6d6dbc3" />
-
 ---
 
 ## 📈 Impact
