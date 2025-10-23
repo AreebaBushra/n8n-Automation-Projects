@@ -1,0 +1,925 @@
+{
+  "name": "AI-Powered Energy Theft Detection and Grid Anomaly Alert System",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "91cce5a8-2833-49a9-82c0-4757daf16dff",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "apiUrl",
+              "value": "YOUR_METER_API_ENDPOINT",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "historicalDataUrl",
+              "value": "YOUR_HISTORICAL_DATA_API_ENDPOINT",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "anomalyThreshold",
+              "value": 30,
+              "type": "number"
+            },
+            {
+              "id": "id-4",
+              "name": "engineerPhone",
+              "value": "03010055035",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "engineerEmail",
+              "value": "areebabushra79@gmail.com",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "d0d08f80-75e1-44d2-832a-4d33bee2ae91",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration').first().json.apiUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aaf484ce-3a6c-4dc5-a67e-9cbfc7a86309",
+      "name": "Fetch Meter Readings from API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        1536
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration').first().json.historicalDataUrl }}?meterId={{ $json.meterId }}&days=30",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "72b4c5c1-ad77-48d8-8bb4-6905247a0501",
+      "name": "Fetch Historical Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1136,
+        1536
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI energy theft detector. Analyze the current reading and its historical consumption pattern to detect possible anomalies.\n\nCurrent Reading Details:\nMeter ID: {{ $json.meter_id }}\nArea: {{ $json.area }}\ntimestamp: {{ $json.timestamp }}\nCurrent Consumption: {{ $json.current_consumption }} kWh\nCurrent Billing: {{ $json.current_billing }}\n\nHistorical Readings:\nBelow is an array of past monthly readings for this meter:\n{{ JSON.stringify($json.history || $json, null, 2) }}\n\nYour task:\n1. Compare the current reading against the historical trend.\n2. Detect if there’s any sudden drop or spike indicating tampering or meter fault.\n3. Check if billing amount seems inconsistent with past consumption.\n4. Consumption missmatches with historical record.\n\nReturn your analysis in JSON format:\n{\n  \"anomalyDetected\": true/false,\n  \"anomalyType\": \"theft\" | \"faulty_meter\" | \"billing_error\" | \"none\",\n  \"confidence\": 0-100,\n  \"reason\": \"short explanation\",\n  \"lossPercentage\": 0–100,\n  \"recommendation\": \"what the utility team should do next\"\n}\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "id": "b792b439-db8f-4289-8f3b-48429605877b",
+      "name": "AI Anomaly Detection Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "anomalyDetected",
+              "value": "={{ $json.fields.anomalyDetected }}",
+              "type": "boolean"
+            },
+            {
+              "id": "id-2",
+              "name": "anomalyType",
+              "value": "={{ $json.fields.anomalyType }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "confidence",
+              "value": "={{ $json.fields.confidence }}",
+              "type": "number"
+            },
+            {
+              "id": "id-4",
+              "name": "reason",
+              "value": "={{ $json.fields.reason }}",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "lossPercentage",
+              "value": "={{ $json.fields.lossPercentage }}",
+              "type": "number"
+            },
+            {
+              "id": "id-6",
+              "name": "recommendation",
+              "value": "={{ $json.fields.recommendation }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "6308adfe-d502-49db-b979-cd868288dfb1",
+      "name": "Parse AI Analysis Results",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2064,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $('Parse AI Analysis Results').item.json.anomalyDetected }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c963a9b4-1ee4-45a8-aec2-9ff6292f0cc8",
+      "name": "Check If Anomaly Detected",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2496,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Workflow Configuration').first().json.engineerEmail }}",
+        "subject": "=Energy Theft Alert - Meter {{ $('Merge by meter_id').item.json.meter_id }}",
+        "message": "=<h2>🚨 Energy Anomaly Detected</h2>\n<p><strong>Meter ID:</strong> {{ $json.id }} </p>\n<p><strong>Anomaly Type:</strong> {{ $json.fields.anomalyType }}</p>\n<p><strong>Confidence Level:</strong> {{ $json.fields.confidence }}%</p>\n<p><strong>Estimated Loss:</strong> {{ $json.fields.lossPercentage }}%</p>\n<p><strong>Reason:</strong> {{ $json.fields.reason }}</p>\n<p><strong>Recommended Action:</strong> {{ $json.fields.recommendation }}</p>\n<p><strong>Detected At:</strong> {{ $now }}</p>\n<p>Please investigate this anomaly as soon as possible.</p>",
+        "options": {}
+      },
+      "id": "5bdef802-b8ef-43a8-9086-ecad3013d765",
+      "name": "Send Email Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2752,
+        1328
+      ],
+      "webhookId": "a213b43a-edea-4150-b16b-5119cef512bf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "g3mkKYaWQX3Cnbrm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appjRbR8I5eCtYO9j",
+          "mode": "list",
+          "cachedResultName": "Energy Theft Monitoring",
+          "cachedResultUrl": "https://airtable.com/appjRbR8I5eCtYO9j"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblbXKfLIpUXJTNFS",
+          "mode": "list",
+          "cachedResultName": "Anomaly Logs",
+          "cachedResultUrl": "https://airtable.com/appjRbR8I5eCtYO9j/tblbXKfLIpUXJTNFS"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "confidence": "={{ $('Check If Anomaly Detected').item.json.fields.confidence }}",
+            "lossPercentage": "={{ $('Check If Anomaly Detected').item.json.fields.lossPercentage }}",
+            "id": "={{ $('Check If Anomaly Detected').item.json.id }}",
+            "anomalyDetected": "={{ $('Check If Anomaly Detected').item.json.fields.anomalyDetected }}",
+            "anomalyType": "={{ $('Check If Anomaly Detected').item.json.fields.anomalyType }}",
+            "reason": "={{ $('Check If Anomaly Detected').item.json.fields.reason }}",
+            "recommendation": "={{ $('Check If Anomaly Detected').item.json.fields.recommendation }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "anomalyDetected",
+              "displayName": "anomalyDetected",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "anomalyType",
+              "displayName": "anomalyType",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "lossPercentage",
+              "displayName": "lossPercentage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "5dc6528b-e965-4358-bce4-28f4f17464c9",
+      "name": "Update Resolution Status",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2944,
+        1328
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "NS4HgJKMusc8DNj5",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1WnlPxkDJM8fPBAM8T7Tl_f8EBdtom6FrNKLWPamHbmQ",
+          "mode": "list",
+          "cachedResultName": "Meter Readings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WnlPxkDJM8fPBAM8T7Tl_f8EBdtom6FrNKLWPamHbmQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Meter Readings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WnlPxkDJM8fPBAM8T7Tl_f8EBdtom6FrNKLWPamHbmQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "97016978-5651-489e-a9d6-684b9dbc2e06",
+      "name": "Current_Readings",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        1232
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "urfFjnLmHzSzKjKX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1WnlPxkDJM8fPBAM8T7Tl_f8EBdtom6FrNKLWPamHbmQ",
+          "mode": "list",
+          "cachedResultName": "Meter Readings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WnlPxkDJM8fPBAM8T7Tl_f8EBdtom6FrNKLWPamHbmQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2993328,
+          "mode": "list",
+          "cachedResultName": "Historical_Readings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WnlPxkDJM8fPBAM8T7Tl_f8EBdtom6FrNKLWPamHbmQ/edit#gid=2993328"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1024,
+        1232
+      ],
+      "id": "a377672b-2cd3-426f-b059-83ec69d3df2a",
+      "name": "Historical_Readings",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "urfFjnLmHzSzKjKX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from both input sources\nconst currentReadings = $items(\"Current_Readings\");\nconst historicalReadings = $items(\"Historical_Readings\");\n\n// Create a lookup map for historical data by meter_id\nconst historyMap = {};\nfor (const item of historicalReadings) {\n  const data = item.json;\n  const id = String(data.meter_id || \"\").trim();\n  if (!id) continue;\n\n  if (!historyMap[id]) historyMap[id] = [];\n\n  historyMap[id].push({\n    month: data.month ? String(data.month).padStart(2, '0') : \"01\",\n    year: data.year || \"2025\",\n    consumption: Number(data[\"consumption (kWh)\"] || 0),\n    billing: Number(data[\"billing_amount (PKR)\"] || 0)\n  });\n}\n\n// Sort & limit to last 3 months per meter\nfor (const id in historyMap) {\n  const unique = new Map();\n  historyMap[id].forEach(r => {\n    const key = `${r.year}-${r.month}`;\n    if (!unique.has(key)) unique.set(key, r);\n  });\n\n  historyMap[id] = Array.from(unique.values())\n    .sort((a, b) => (b.year + b.month) - (a.year + a.month))\n    .slice(0, 3);\n}\n\n// Merge both datasets by meter_id\nconst merged = currentReadings.map(item => {\n  const cur = item.json;\n  const id = String(cur.meter_id || \"\").trim();\n\n  return {\n    meter_id: id,\n    area: cur.area,\n    timestamp: cur.timestamp,\n    current_consumption: Number(cur[\"consumption (kWh)\"] || 0),\n    current_billing: Number(cur[\"billing_amount (PKR)\"] || 0),\n    history: historyMap[id] || []\n  };\n});\n\n// Return array of merged JSON items\nreturn merged.map(data => ({ json: data }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        1232
+      ],
+      "id": "8fa8042f-6114-47c8-be87-7bc0b80dddb6",
+      "name": "Merge by meter_id"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"anomalyDetected\": \"boolean\",\n  \"anomalyType\": \"string\",\n  \"confidence\": \"number\",\n  \"reason\": \"string\",\n  \"lossPercentage\": \"number\",\n  \"recommendation\": \"string\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1632,
+        1536
+      ],
+      "id": "3a5471b6-821f-4f16-af6b-329790191114",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appjRbR8I5eCtYO9j",
+          "mode": "list",
+          "cachedResultName": "Energy Theft Monitoring",
+          "cachedResultUrl": "https://airtable.com/appjRbR8I5eCtYO9j"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblbXKfLIpUXJTNFS",
+          "mode": "list",
+          "cachedResultName": "Anomaly Logs",
+          "cachedResultUrl": "https://airtable.com/appjRbR8I5eCtYO9j/tblbXKfLIpUXJTNFS"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "confidence": "={{ $json.output.confidence }}",
+            "lossPercentage": "={{ $json.output.lossPercentage }}",
+            "anomalyDetected": "={{ $json.output.anomalyDetected }}",
+            "anomalyType": "={{ $json.output.anomalyType }}",
+            "reason": "={{ $json.output.reason }}",
+            "recommendation": "={{ $json.output.recommendation }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "anomalyDetected",
+              "displayName": "anomalyDetected",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "anomalyType",
+              "displayName": "anomalyType",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "lossPercentage",
+              "displayName": "lossPercentage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1824,
+        1328
+      ],
+      "id": "70ddfc56-0d33-4dc3-b948-2acc71303477",
+      "name": "Create a record1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "NS4HgJKMusc8DNj5",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appjRbR8I5eCtYO9j",
+          "mode": "list",
+          "cachedResultName": "Energy Theft Monitoring",
+          "cachedResultUrl": "https://airtable.com/appjRbR8I5eCtYO9j"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblbXKfLIpUXJTNFS",
+          "mode": "list",
+          "cachedResultName": "Anomaly Logs",
+          "cachedResultUrl": "https://airtable.com/appjRbR8I5eCtYO9j/tblbXKfLIpUXJTNFS"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "anomalyDetected": "={{ $json.fields.anomalyDetected }}",
+            "anomalyType": "={{ $json.fields.anomalyType }}",
+            "confidence": "={{ $json.fields.confidence }}",
+            "reason": "={{ $json.fields.reason }}",
+            "lossPercentage": "={{ $json.fields.lossPercentage }}",
+            "recommendation": "={{ $json.fields.recommendation }}",
+            "id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "anomalyDetected",
+              "displayName": "anomalyDetected",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "anomalyType",
+              "displayName": "anomalyType",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "lossPercentage",
+              "displayName": "lossPercentage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2272,
+        1328
+      ],
+      "id": "aeced351-6dac-4536-980e-41eaddca5cf0",
+      "name": "Create or update a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "NS4HgJKMusc8DNj5",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        1536
+      ],
+      "id": "abd4700d-52b6-43e3-acd7-f408aec2e7b1",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "sn1aUZUwR6UBE5q9",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Current_Readings",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Meter Readings from API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Meter Readings from API": {
+      "main": [
+        [
+          {
+            "node": "Fetch Historical Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Historical Data": {
+      "main": [
+        []
+      ]
+    },
+    "AI Anomaly Detection Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Analysis Results": {
+      "main": [
+        [
+          {
+            "node": "Create or update a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Anomaly Detected": {
+      "main": [
+        [
+          {
+            "node": "Send Email Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Alert": {
+      "main": [
+        [
+          {
+            "node": "Update Resolution Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Current_Readings": {
+      "main": [
+        [
+          {
+            "node": "Historical_Readings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Historical_Readings": {
+      "main": [
+        [
+          {
+            "node": "Merge by meter_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge by meter_id": {
+      "main": [
+        [
+          {
+            "node": "AI Anomaly Detection Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Anomaly Detection Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record1": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Analysis Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a record": {
+      "main": [
+        [
+          {
+            "node": "Check If Anomaly Detected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Anomaly Detection Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e45b418c-4df9-47a7-8f17-337e2d8485d2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d0725917eda75b45ae63f9ed34f74fcea3477132b0e996970eaecf0b7b1aff3f"
+  },
+  "id": "qC3QXwblszWYc1F8",
+  "tags": []
+}
