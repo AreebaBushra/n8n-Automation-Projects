@@ -426,7 +426,7 @@
     },
     {
       "parameters": {
-        "sendTo": "areebabushra79@gmail.com",
+        "sendTo": "example@gmail.com",
         "subject": "=Daily Global Market Intelligence Report - {{ new Date().toLocaleDateString() }}",
         "message": "={{ $json.emailHtml }}",
         "options": {}
