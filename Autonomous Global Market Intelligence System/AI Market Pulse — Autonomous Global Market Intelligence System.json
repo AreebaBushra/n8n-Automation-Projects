@@ -1,0 +1,716 @@
+{
+  "name": "AI Market Pulse — Autonomous Global Market Intelligence System",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "id": "94888a4a-f0c8-4d44-9e0e-70564768612c",
+      "name": "Daily Intelligence Scan",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        816,
+        1216
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "financialNewsApiUrl",
+              "value": "https://newsapi.org/v2/everything?q=finance+OR+stocks+OR+market&language=en&sortBy=publishedAt&popularity&apiKey=8ef2a5f5a28c4e3d85c918f64563973d\n\n\n",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "rssNewsUrl",
+              "value": "https://feeds.bbci.co.uk/news/business/rss.xml",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "twitterApiUrl",
+              "value": "\nhttps://api.twitter.com/2/tweets/search/recent?query=(finance OR stocks OR crypto) lang:en -is:retweet&max_results=100&tweet.fields=public_metrics,created_at,author_id\n",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "marketDataApiUrl",
+              "value": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "redditSubreddits",
+              "value": "wallstreetbets,stocks,investing,cryptocurrency",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "analysisTopics",
+              "value": "emerging trends,market sentiment,crisis signals,investment opportunities,geopolitical risks",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "0a13d9c8-af02-4916-9250-6d1b6db7a1d2",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        1216
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.financialNewsApiUrl }}",
+        "options": {}
+      },
+      "id": "a7170e1f-28ea-46b1-b630-4a64c62ebba8",
+      "name": "Fetch Financial News API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration').first().json.rssNewsUrl }}",
+        "options": {}
+      },
+      "id": "36170b43-7c92-43be-b43c-7b505674f32b",
+      "name": "Global News RSS Feed",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        1520,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "location": "allReddit",
+        "keyword": "={{ $json.redditSubreddits }}",
+        "additionalFields": {
+          "sort": "hot"
+        }
+      },
+      "id": "9ce153f2-3251-4a2b-8c00-8cde015c6753",
+      "name": "Reddit Trending Posts",
+      "type": "n8n-nodes-base.reddit",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        1216
+      ],
+      "credentials": {
+        "redditOAuth2Api": {
+          "id": "LoZ5RPkgP2yqdR03",
+          "name": "Reddit account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.twitter.com/2/tweets/search/recent?query=(finance OR stocks OR crypto) lang:en -is:retweet&max_results=100&tweet.fields=public_metrics,created_at,author_id\n",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "6a04c1d9-3b43-4082-8506-aead2aece053",
+      "name": "Twitter/X API Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        1408
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "1mYL46lJb3ioFpVq",
+          "name": "Bearer Auth account 2"
+        },
+        "twitterOAuth1Api": {
+          "id": "ms9oIe9Ofej3kyzY",
+          "name": "X OAuth account"
+        },
+        "httpBasicAuth": {
+          "id": "YLSWG4GSjdBciAxE",
+          "name": "Unnamed credential"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration').first().json.marketDataApiUrl }}",
+        "options": {}
+      },
+      "id": "d01543ef-aecb-43bb-9dd9-b77d9863dc6d",
+      "name": "Market Data API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "id": "a6b2e3d8-96ca-41d2-9da4-20d40abac08f",
+      "name": "Combine All Data Sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1904,
+        1136
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "allDataSources",
+        "options": {}
+      },
+      "id": "697f53b2-5c50-40b0-a142-498edc8f246c",
+      "name": "Aggregate Data for Analysis",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a global market intelligence analyst. Analyze the following data from multiple sources (financial news, global news, Reddit discussions, and market data) to identify:\n\n1. **Emerging Trends**: What new patterns, topics, or movements are gaining momentum?\n2. **Market Sentiment**: What is the overall sentiment (bullish/bearish/neutral) and why?\n3. **Crisis Signals**: Are there any potential risks, crises, or black swan events emerging?\n4. **Investment Opportunities**: What sectors, assets, or strategies show promise?\n5. **Geopolitical Risks**: What political or global events could impact markets?\n\nData to analyze:\n{{ $json.formattedSources }}\nProvide a comprehensive intelligence report with actionable insights for investors, businesses, and decision-makers.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "id": "4d20e946-073f-4416-ac4c-39f29c6010c5",
+      "name": "Market Intelligence AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2736,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"reportDate\": \"2024-01-15\",\n  \"emergingTrends\": [\n    {\n      \"trend\": \"AI Infrastructure Investment Surge\",\n      \"confidence\": \"high\",\n      \"description\": \"Increased focus on AI chip manufacturing and data centers\",\n      \"sources\": [\"financial news\", \"reddit\"],\n      \"impactScore\": 8.5\n    }\n  ],\n  \"marketSentiment\": {\n    \"overall\": \"cautiously optimistic\",\n    \"score\": 6.5,\n    \"drivers\": [\"Strong tech earnings\", \"Fed policy uncertainty\"],\n    \"sectorBreakdown\": {\n      \"technology\": \"bullish\",\n      \"finance\": \"neutral\",\n      \"energy\": \"bearish\"\n    }\n  },\n  \"crisisSignals\": [\n    {\n      \"signal\": \"Banking sector stress in regional banks\",\n      \"severity\": \"medium\",\n      \"probability\": 0.35,\n      \"timeframe\": \"3-6 months\",\n      \"mitigation\": \"Diversify away from regional bank exposure\"\n    }\n  ],\n  \"investmentOpportunities\": [\n    {\n      \"opportunity\": \"Renewable Energy Infrastructure\",\n      \"type\": \"sector\",\n      \"rationale\": \"Government incentives and corporate ESG commitments driving growth\",\n      \"riskLevel\": \"medium\",\n      \"timeHorizon\": \"12-24 months\",\n      \"potentialReturn\": \"15-25%\"\n    }\n  ],\n  \"geopoliticalRisks\": [\n    {\n      \"risk\": \"US-China tech decoupling\",\n      \"impactedSectors\": [\"semiconductors\", \"consumer electronics\"],\n      \"probability\": 0.7,\n      \"marketImpact\": \"Supply chain disruption and increased costs\"\n    }\n  ],\n  \"keyInsights\": [\n    \"AI adoption accelerating across industries\",\n    \"Inflation showing signs of cooling\",\n    \"Retail investor sentiment shifting to defensive positions\"\n  ],\n  \"actionableRecommendations\": [\n    \"Consider increasing allocation to AI infrastructure plays\",\n    \"Monitor regional bank exposure and stress indicators\",\n    \"Hedge geopolitical risk with diversified international exposure\"\n  ]\n}"
+      },
+      "id": "c7898626-4492-4aba-90ad-8402bc2f4bdc",
+      "name": "Structured Report Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2912,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const report = $input.first().json.output;\nconst timestamp = new Date().toISOString();\n\n// Format for email (HTML)\nconst emailHtml = `\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n    h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }\n    h2 { color: #34495e; margin-top: 25px; }\n    .metric { background: #ecf0f1; padding: 10px; margin: 10px 0; border-radius: 5px; }\n    .high-priority { background: #ffe6e6; border-left: 4px solid #e74c3c; padding: 10px; }\n    .opportunity { background: #e8f8f5; border-left: 4px solid #27ae60; padding: 10px; }\n    ul { margin: 10px 0; }\n    .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #bdc3c7; font-size: 0.9em; color: #7f8c8d; }\n  </style>\n</head>\n<body>\n  <h1>🌍 Global Market Intelligence Report</h1>\n  <p><strong>Generated:</strong> ${new Date(report.reportDate || timestamp).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>\n  \n  <h2>📊 Market Sentiment Overview</h2>\n  <div class=\"metric\">\n    <strong>Overall Sentiment:</strong> ${report.marketSentiment?.overall || 'N/A'} (Score: ${report.marketSentiment?.score || 'N/A'}/10)<br>\n    <strong>Key Drivers:</strong> ${(report.marketSentiment?.drivers || []).join(', ')}\n  </div>\n  \n  <h2>🚀 Emerging Trends</h2>\n  ${(report.emergingTrends || []).map(trend => `\n    <div class=\"metric\">\n      <strong>${trend.trend}</strong> (Confidence: ${trend.confidence}, Impact: ${trend.impactScore}/10)<br>\n      ${trend.description}<br>\n      <em>Sources: ${trend.sources.join(', ')}</em>\n    </div>\n  `).join('')}\n  \n  <h2>⚠️ Crisis Signals</h2>\n  ${(report.crisisSignals || []).map(signal => `\n    <div class=\"high-priority\">\n      <strong>${signal.signal}</strong><br>\n      Severity: ${signal.severity} | Probability: ${(signal.probability * 100).toFixed(0)}% | Timeframe: ${signal.timeframe}<br>\n      <strong>Mitigation:</strong> ${signal.mitigation}\n    </div>\n  `).join('')}\n  \n  <h2>💡 Investment Opportunities</h2>\n  ${(report.investmentOpportunities || []).map(opp => `\n    <div class=\"opportunity\">\n      <strong>${opp.opportunity}</strong> (${opp.type})<br>\n      ${opp.rationale}<br>\n      Risk: ${opp.riskLevel} | Horizon: ${opp.timeHorizon} | Potential Return: ${opp.potentialReturn}\n    </div>\n  `).join('')}\n  \n  <h2>🌐 Geopolitical Risks</h2>\n  ${(report.geopoliticalRisks || []).map(risk => `\n    <div class=\"metric\">\n      <strong>${risk.risk}</strong> (Probability: ${(risk.probability * 100).toFixed(0)}%)<br>\n      Impacted Sectors: ${risk.impactedSectors.join(', ')}<br>\n      ${risk.marketImpact}\n    </div>\n  `).join('')}\n  \n  <h2>🎯 Actionable Recommendations</h2>\n  <ul>\n    ${(report.actionableRecommendations || []).map(rec => `<li>${rec}</li>`).join('')}\n  </ul>\n  \n  <h2>💡 Key Insights</h2>\n  <ul>\n    ${(report.keyInsights || []).map(insight => `<li>${insight}</li>`).join('')}\n  </ul>\n  \n  <div class=\"footer\">\n    <p>This report was automatically generated by the Autonomous Global Market Intelligence System.<br>\n    Data sources: Financial News APIs, Global News RSS, Reddit, Twitter/X, Market Data APIs</p>\n  </div>\n</body>\n</html>\n`;\n\n// Format for Slack (Markdown)\nconst slackMessage = `*🌍 Global Market Intelligence Report*\n_Generated: ${new Date(report.reportDate || timestamp).toLocaleDateString()}_\n\n*📊 Market Sentiment:* ${report.marketSentiment?.overall || 'N/A'} (${report.marketSentiment?.score || 'N/A'}/10)\n\n*🚀 Top Emerging Trends:*\n${(report.emergingTrends || []).slice(0, 3).map(t => `• *${t.trend}* (Impact: ${t.impactScore}/10)\\n  ${t.description}`).join('\\n')}\n\n*⚠️ Crisis Signals:*\n${(report.crisisSignals || []).map(s => `• *${s.signal}* - ${s.severity} severity (${(s.probability * 100).toFixed(0)}% probability)`).join('\\n')}\n\n*💡 Top Opportunities:*\n${(report.investmentOpportunities || []).slice(0, 3).map(o => `• *${o.opportunity}* - ${o.potentialReturn} potential return`).join('\\n')}\n\n*🎯 Key Recommendations:*\n${(report.actionableRecommendations || []).slice(0, 5).map(r => `• ${r}`).join('\\n')}\n\n_Full report available in email and dashboard_`;\n\n// Format for Google Sheets\nconst sheetRow = {\n  timestamp: timestamp,\n  reportDate: report.reportDate || timestamp,\n  overallSentiment: report.marketSentiment?.overall || '',\n  sentimentScore: report.marketSentiment?.score || 0,\n  topTrend: (report.emergingTrends || [])[0]?.trend || '',\n  trendImpact: (report.emergingTrends || [])[0]?.impactScore || 0,\n  crisisCount: (report.crisisSignals || []).length,\n  topCrisis: (report.crisisSignals || [])[0]?.signal || '',\n  opportunityCount: (report.investmentOpportunities || []).length,\n  topOpportunity: (report.investmentOpportunities || [])[0]?.opportunity || '',\n  geopoliticalRiskCount: (report.geopoliticalRisks || []).length,\n  keyInsights: (report.keyInsights || []).join(' | '),\n  fullReportJson: JSON.stringify(report)\n};\n\nreturn [\n  {\n    json: {\n      emailHtml,\n      slackMessage,\n      sheetRow,\n      originalReport: report\n    }\n  }\n];"
+      },
+      "id": "73a07551-60dc-48f9-9244-ed4b0c83cd30",
+      "name": "Format Report Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3104,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ax1PdMHg73tImKdx9XJVyCHmyWgwuQXixgo-xpVuhhU",
+          "mode": "list",
+          "cachedResultName": "Intelligence Report",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ax1PdMHg73tImKdx9XJVyCHmyWgwuQXixgo-xpVuhhU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Intelligence Reports",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ax1PdMHg73tImKdx9XJVyCHmyWgwuQXixgo-xpVuhhU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.sheetRow.timestamp }}",
+            "reportDate": "={{ $json.sheetRow.reportDate }}",
+            "overallSentiment": "={{ $json.sheetRow.overallSentiment }}",
+            "sentimentScore": "={{ $json.sheetRow.sentimentScore }}",
+            "topTrend": "={{ $json.sheetRow.topTrend }}",
+            "trendImpact": "={{ $json.sheetRow.trendImpact }}",
+            "crisisCount": "={{ $json.sheetRow.crisisCount }}",
+            "topCrisis": "={{ $json.sheetRow.topCrisis }}",
+            "opportunityCount": "={{ $json.sheetRow.opportunityCount }}",
+            "topOpportunity": "={{ $json.sheetRow.topOpportunity }}",
+            "geopoliticalRiskCount": "={{ $json.sheetRow.geopoliticalRiskCount }}",
+            "keyInsights": "={{ $json.sheetRow.keyInsights }}",
+            "fullReportJson": "={{ $json.sheetRow.fullReportJson }}"
+          },
+          "matchingColumns": [
+            "reportDate"
+          ],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reportDate",
+              "displayName": "reportDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "overallSentiment",
+              "displayName": "overallSentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentimentScore",
+              "displayName": "sentimentScore",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topTrend",
+              "displayName": "topTrend",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "trendImpact",
+              "displayName": "trendImpact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "crisisCount",
+              "displayName": "crisisCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topCrisis",
+              "displayName": "topCrisis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "opportunityCount",
+              "displayName": "opportunityCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topOpportunity",
+              "displayName": "topOpportunity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "geopoliticalRiskCount",
+              "displayName": "geopoliticalRiskCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "keyInsights",
+              "displayName": "keyInsights",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fullReportJson",
+              "displayName": "fullReportJson",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "93b187a6-84cc-4dd1-9bff-28ebaa9330a4",
+      "name": "Save to Intelligence Dashboard",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3328,
+        976
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "urfFjnLmHzSzKjKX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "areebabushra79@gmail.com",
+        "subject": "=Daily Global Market Intelligence Report - {{ new Date().toLocaleDateString() }}",
+        "message": "={{ $json.emailHtml }}",
+        "options": {}
+      },
+      "id": "92bab2b6-1eb7-4017-9974-64bbbed95167",
+      "name": "Send Intelligence Report Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3328,
+        1168
+      ],
+      "webhookId": "e6b36028-f4cc-47fc-8651-18981bb48992",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "g3mkKYaWQX3Cnbrm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09NRH2AZL2",
+          "mode": "list",
+          "cachedResultName": "new-channel"
+        },
+        "text": "={{ $json.slackMessage }}",
+        "otherOptions": {}
+      },
+      "id": "0349e42b-fc22-4774-a6d2-5cd6153cff60",
+      "name": "Post Alert to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        3328,
+        1360
+      ],
+      "webhookId": "a5d54498-b4db-4080-a6e1-e832b0de23dc",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "e0ypjyHeE9iNQeOv",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2736,
+        1408
+      ],
+      "id": "c88526e5-6348-418a-bb65-5af28067fea6",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "sn1aUZUwR6UBE5q9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const sources = $input.first().json.allDataSources  || [];\nlet totalCount = 0;\n\nconst formattedSections = sources\n  .map((src, i) => {\n    const articles = src.articles || src.data || src.items || src.posts || src.tweets || src.feed || src.results || [];\n    const count = Array.isArray(articles) ? articles.length : 0;\n    if (count === 0) return null;\n\n    totalCount += count;\n\n    const name = src.source?.name || src.source || src.provider?.name || src.channel || src.platform || src.apiName || `Source ${i + 1}`;\n\n    const samples = articles.map((a, j) => {\n      const title = a.title || a.headline || a.name || a.text || a.content || 'Untitled';\n      const desc = a.description || a.summary || a.snippet || a.body || '';\n      const date = a.publishedAt || a.date || a.created_at || a.timestamp || '';\n      const sourceName = a.source?.name || a.source || a.platform || `Item ${j + 1}`;\n      return `   - ${title} (${sourceName}, ${date})\\n     ${desc}`;\n    });\n\n    return `📊 ${name}\\nTotal Items: ${count}\\nSample Data:\\n${samples.join('\\n')}`;\n  })\n  .filter(Boolean);\n\nconst output = `📈 Total Combined Articles: ${totalCount}\\n\\n${formattedSections.join('\\n\\n')}`;\n\nreturn [{ json: { formattedSources: output } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2336,
+        1184
+      ],
+      "id": "b260a9c7-ce19-426c-8c80-ba151fc7e194",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily Intelligence Scan": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Fetch Financial News API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Global News RSS Feed",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Reddit Trending Posts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Twitter/X API Search",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Market Data API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Financial News API": {
+      "main": [
+        [
+          {
+            "node": "Combine All Data Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Global News RSS Feed": {
+      "main": [
+        [
+          {
+            "node": "Combine All Data Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Reddit Trending Posts": {
+      "main": [
+        [
+          {
+            "node": "Combine All Data Sources",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Twitter/X API Search": {
+      "main": [
+        [
+          {
+            "node": "Combine All Data Sources",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Market Data API": {
+      "main": [
+        [
+          {
+            "node": "Combine All Data Sources",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Combine All Data Sources": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Data for Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Data for Analysis": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Report Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Market Intelligence AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Market Intelligence AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Report Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Report Data": {
+      "main": [
+        [
+          {
+            "node": "Save to Intelligence Dashboard",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Intelligence Report Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Post Alert to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Market Intelligence AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Market Intelligence AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2c7d76a3-37d2-4901-940e-d42e2201b892",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d0725917eda75b45ae63f9ed34f74fcea3477132b0e996970eaecf0b7b1aff3f"
+  },
+  "id": "tqnnj6wLMQo201xd",
+  "tags": []
+}
