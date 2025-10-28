@@ -3,7 +3,7 @@
 ### *Autonomous Global Market & Sentiment Intelligence System*
 ---
 
-## 📖 **Overview**
+## **Overview**
 
 **AI Market Pulse** is an **autonomous market intelligence system** built on **n8n** that aggregates, analyzes, and reports real-time financial insights from multiple global data sources.
 
@@ -11,36 +11,34 @@ It automates what analysts and investors spend hours doing — reading market ne
 
 ---
 
-## 🚀 **Key Features**
+## **Key Features**
 
-* **🌐 Multi-Source Data Aggregation**
-  Collects data from **NewsAPI**, **Reddit**, **Twitter/X**, and other market data feeds.
+* **Multi-Source Data Aggregation**
+  Collects data from NewsAPI, Reddit, Twitter/X, and other market data feeds.
 
-* **🧠 AI-Powered Summarization**
-  Uses **OpenAI GPT models** to analyze global financial sentiment, emerging trends, and risk signals.
+* **AI-Powered Summarization**
+  Uses OpenAI models to analyze global financial sentiment, emerging trends, and risk signals.
 
-* **📊 Market Insights Dashboard**
+* **Market Insights Dashboard**
   Detects and structures data into actionable intelligence:
-
   * Sentiment Overview
   * Emerging Trends
   * Crisis Signals
   * Investment Opportunities
   * Geopolitical Risks
 
-* **📤 Automated Delivery**
+* **Automated Delivery**
   Sends formatted intelligence reports automatically to:
+  * Email (HTML Report)
+  * Slack (Markdown Summary)
+  * Google Sheets (Structured Logs)
 
-  * **Email (HTML Report)**
-  * **Slack (Markdown Summary)**
-  * **Google Sheets (Structured Logs)**
-
-* **📈 Scalable & Extensible**
+* **Scalable & Extensible**
   Fully modular — new APIs, dashboards, or alerts can be integrated with minimal setup.
   
 ---
 
-## 🧠 **AI Workflow Logic**
+## **AI Workflow Logic**
 
 | Stage                   | Description                                                                                           |
 | ----------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -59,21 +57,10 @@ It automates what analysts and investors spend hours doing — reading market ne
 * Crisis alerts
 * Investment opportunities
 * Actionable recommendations
-
+  
 ---
 
-## 🧭 **Use Cases**
-
-| User Type                    | Benefit                                                |
-| ---------------------------- | ------------------------------------------------------ |
-| **Investors & Traders**      | Get summarized daily market sentiment and news impact. |
-| **Analysts**                 | Automate repetitive data collection and reporting.     |
-| **Startups / FinTech Teams** | Integrate insights into dashboards or client reports.  |
-| **Researchers**              | Analyze sentiment patterns across global markets.      |
-
----
-
-## 🧱 **Tech Stack**
+## **Tech Stack**
 
 * **Automation:** n8n (Self-hosted / Cloud)
 * **AI Engine:** OpenAI GPT Models
@@ -82,7 +69,7 @@ It automates what analysts and investors spend hours doing — reading market ne
 * **Formatting:** JavaScript (HTML + Markdown Templates)
 
 ---
-📊 Real-World Impact
+## **Real-World Impact**
 
 * Helps investors and analysts monitor multiple markets simultaneously.
 * Enables early detection of global events affecting portfolios.
