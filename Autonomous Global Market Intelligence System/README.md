@@ -20,18 +20,10 @@ It automates what analysts and investors spend hours doing — reading market ne
   Uses OpenAI models to analyze global financial sentiment, emerging trends, and risk signals.
 
 * **Market Insights Dashboard**
-  Detects and structures data into actionable intelligence:
-  * Sentiment Overview
-  * Emerging Trends
-  * Crisis Signals
-  * Investment Opportunities
-  * Geopolitical Risks
+  Detects and structures data into actionable insights.
 
 * **Automated Delivery**
-  Sends formatted intelligence reports automatically to:
-  * Email (HTML Report)
-  * Slack (Markdown Summary)
-  * Google Sheets (Structured Logs)
+  Sends formatted intelligence reports automatically to Email, Slack, and Google Sheets.
 
 * **Scalable & Extensible**
   Fully modular — new APIs, dashboards, or alerts can be integrated with minimal setup.
@@ -43,7 +35,7 @@ It automates what analysts and investors spend hours doing — reading market ne
 | Stage                   | Description                                                                                           |
 | ----------------------- | ----------------------------------------------------------------------------------------------------- |
 | **1️⃣ Data Collection** | Fetches live global news, Reddit discussions, and X (Twitter) updates on finance, stocks, and crypto. |
-| **2️⃣ Aggregation**     | Merges multiple API responses into a unified dataset (`allDataSources`).                              |
+| **2️⃣ Aggregation**     | Merges multiple API responses into a unified dataset.                              |
 | **3️⃣ Summarization**   | AI Agent analyzes sentiment, trends, risks, and opportunities using OpenAI GPT.                       |
 | **4️⃣ Formatting**      | Converts AI insights into: <br> - HTML (Email) <br> - Markdown (Slack) <br> - JSON (Google Sheets).   |
 | **5️⃣ Distribution**    | Sends reports via Gmail, Slack, and saves structured logs for dashboards or analysis.                 |
