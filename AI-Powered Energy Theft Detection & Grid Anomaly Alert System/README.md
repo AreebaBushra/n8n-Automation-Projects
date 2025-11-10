@@ -50,6 +50,13 @@ This system automates the detection of irregular energy usage by combining:
 * ✅ Supports data-driven decision-making
 
 ---
+## **Project Demo Video**
+
+https://github.com/user-attachments/assets/f7050ad5-6297-4d8a-8093-740cd981e0a6
+
+
+
+---
 
 **Areeba Bushra**
 *Data Science & AI Enthusiast | Automation Developer*
