@@ -66,6 +66,10 @@ It automates what analysts and investors spend hours doing — reading market ne
 * Helps investors and analysts monitor multiple markets simultaneously.
 * Enables early detection of global events affecting portfolios.
 * Automates reporting — turning hours of research into a few minutes of insight.
+  
+---
+## **Project Demo Video**
+https://github.com/user-attachments/assets/0ad28640-a70a-4929-a56e-a3e94125f782
 
 ---
 **Areeba Bushra**
