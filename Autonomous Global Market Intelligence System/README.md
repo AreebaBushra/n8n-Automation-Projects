@@ -11,6 +11,13 @@ It automates what analysts and investors spend hours doing — reading market ne
 
 ---
 
+## **Project Demo Video**
+
+
+https://github.com/user-attachments/assets/2208432a-9425-451e-b27a-af5ecf092304
+
+
+---
 ## **Key Features**
 
 * **Multi-Source Data Aggregation**
@@ -67,10 +74,6 @@ It automates what analysts and investors spend hours doing — reading market ne
 * Enables early detection of global events affecting portfolios.
 * Automates reporting — turning hours of research into a few minutes of insight.
   
----
-## **Project Demo Video**
-https://github.com/user-attachments/assets/0ad28640-a70a-4929-a56e-a3e94125f782
-
 ---
 **Areeba Bushra**
 *Data Science & AI Enthusiast | Automation Developer*
