@@ -14,7 +14,10 @@ It automates what analysts and investors spend hours doing — reading market ne
 ## **Project Demo Video**
 
 
-https://github.com/user-attachments/assets/2208432a-9425-451e-b27a-af5ecf092304
+
+https://github.com/user-attachments/assets/b9f0bd03-08ec-47f9-ae8d-13d06b7c4ebe
+
+
 
 
 ---
