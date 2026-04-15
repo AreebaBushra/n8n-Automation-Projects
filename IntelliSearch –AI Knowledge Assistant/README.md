@@ -20,6 +20,13 @@ The IntelliSearch workflow automates document ingestion, embedding generation, v
 
 ---
 
+
+## Demo
+
+See [demo_video.md](./demo_video.md) for a full walkthrough of the application.
+
+---
+
 ## Workflow Components
 
 | Component                       | Function                                                   |
