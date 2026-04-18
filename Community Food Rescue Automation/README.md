@@ -60,7 +60,7 @@ This creates an **end-to-end automated food rescue chain** that saves time and r
 ## 🔄 Process Flow
 
 1. **Donor Message Received:**
-   Donor sends a WhatsApp message about food availability.
+   Donor sends a WhatsApp message about food availability in Food donation WhatsApp group.
    
 3. **Message Parsing:**
    Google Gemini extracts structured information.
