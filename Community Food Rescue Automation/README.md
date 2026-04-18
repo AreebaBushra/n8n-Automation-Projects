@@ -45,6 +45,7 @@ This creates an **end-to-end automated food rescue chain** that saves time and r
 | **Message Dispatch**                        | Sends pickup details to suitable volunteers via WhatsApp.                   |
 | **Confirmation Handling**                   | Waits for volunteer response and updates the donor automatically.           |
 
+#### Workflow:
 <img width="1233" height="472" alt="workflow" src="https://github.com/user-attachments/assets/254aecef-a550-4e00-b92d-680d7f41e28c" />
 
 ---
