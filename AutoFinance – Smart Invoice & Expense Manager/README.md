@@ -35,6 +35,9 @@ This project demonstrates how **automation + AI** can simplify real-world busine
 | **AI Summary Node**      | Generates monthly reports summarizing totals and trends. |
 | **Gmail Send Node**      | Emails formatted financial reports automatically.        |
 
+
+<img width="1084" height="468" alt="workflow" src="https://github.com/user-attachments/assets/869983ad-4fb8-4fff-9c90-e71cc2497a88" />
+
 ---
 
 ## 🧠 Technical Stack
