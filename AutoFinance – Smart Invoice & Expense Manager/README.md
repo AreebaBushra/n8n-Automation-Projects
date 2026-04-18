@@ -35,8 +35,7 @@ This project demonstrates how **automation + AI** can simplify real-world busine
 | **AI Summary Node**      | Generates monthly reports summarizing totals and trends. |
 | **Gmail Send Node**      | Emails formatted financial reports automatically.        |
 
-
-<img width="1084" height="468" alt="workflow" src="https://github.com/user-attachments/assets/869983ad-4fb8-4fff-9c90-e71cc2497a88" />
+<img width="1084" height="468" alt="workflow" src="https://github.com/user-attachments/assets/42d0901c-c5a2-4642-9771-8790a47e0df0" />
 
 ---
 
@@ -57,6 +56,7 @@ This project demonstrates how **automation + AI** can simplify real-world busine
 3. **Logging:** n8n appends the extracted data to a Google Sheet.
 4. **Analysis:** AI summarizes the month’s financial performance.
 5. **Reporting:** The summary is formatted and emailed to the user.
+
 
 ---
 
